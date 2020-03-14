@@ -13,6 +13,7 @@ class SuperspiderSpider(scrapy.Spider):
     name = 'superspider'
     allowed_domains = ['t66y.com']
     start_urls = ['https://t66y.com/thread0806.php?fid=16&search=&page=1']
+    # last_id = 3651197
     root_url = ROOT_URL
     local_file_root = LOCAL_FILE_ROOT
     max_pages = MAX_PAGES
@@ -27,7 +28,9 @@ class SuperspiderSpider(scrapy.Spider):
             if len(temp_result) == 4:
                 year_month = temp_result[1]
                 post_id = temp_result[3].split('.')[0]
+                # 插入lastid判断逻辑
                 if len(post_id) > 6:
+                    print("post_id = %d" % int(post_id))
                     post_url = self.root_url + item['href']
                     yield Request(url=post_url, callback=self.parse_page, meta={'post_id': post_id}, dont_filter=True)
         cur_page = int(response.url.split('=')[-1])
@@ -48,7 +51,7 @@ class SuperspiderSpider(scrapy.Spider):
         if len(temp_title_list) != 0:
             post_title = temp_title_list[0].text
         print(post_title + " URL: " + response.url)
-        temp_img_list = soup.find_all('input', attrs={'type': 'image'})
+        temp_img_list = soup.find_all('img')
         img_list = []
         post_image_list = []
         for i in range(len(temp_img_list)):
@@ -58,7 +61,9 @@ class SuperspiderSpider(scrapy.Spider):
                 src2 = temp_img_list[1]['data-src'].split('/')[2]
                 if src1 != src2:
                     img_list.remove(temp_img_list[0])
+            print("SUMMER = %s" % temp_img_list[i])
             img_list.append(temp_img_list[i])
+
         for item in img_list:
             image_url = item['data-src']
             post_image_list.append(item['data-src'])
@@ -88,6 +93,3 @@ class SuperspiderSpider(scrapy.Spider):
             # 写入文件的操作
             with open(filename, 'xb') as file:
                 file.write(content)
-
-        def Bonobono(self, response):
-            print("Bonobono")
